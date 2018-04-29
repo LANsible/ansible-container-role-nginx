@@ -1,0 +1,24 @@
+---
+- name: Add Nginx PPA
+  apt_repository:
+    repo: "{{ nginx_ppa }}"
+    state: present
+
+- name: Add Nginx source dep
+  apt_repository:
+    repo: deb-src http://ppa.launchpad.net/nginx/development/ubuntu xenial main
+    state: present
+    filename: nginx-ubuntu-development-xenial.list
+
+- name: "Build tools with apt, state: {{ state }}"
+  apt:
+    name: "{{ nginx_build_tools }}"
+    state: "{{ state }}"
+    update_cache: true
+    install_recommends: false
+
+- name: Prerequisites for Nginx
+  apt:
+    name: "{{ nginx_prerequisites + nginx_dynamic_modules_prerequisites|default([]) }}"
+    state: present
+    install_recommends: false

@@ -1,0 +1,4 @@
+---
+- src: https://github.com/lansible/ansible-container-role-cleanup
+  version: master
+  name: cleanup

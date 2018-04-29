@@ -1,0 +1,14 @@
+---
+not_dev: "{{ env != 'development' }}"
+
+nginx_build_tools:
+  - git
+  - rsync
+  - build-essential
+
+nginx_prerequisites:
+  - libssl-dev
+  - libxml2-dev
+  - libxslt1-dev
+  - libgd-dev
+  - libgeoip-dev

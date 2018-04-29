@@ -1,0 +1,12 @@
+---
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+  when: ansible_connection != 'docker'
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+  when: ansible_connection != 'docker'

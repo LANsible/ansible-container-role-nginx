@@ -1,0 +1,59 @@
+---
+- name: Install Nginx
+  apt:
+    name: "{{ nginx_package }}"
+    state: present
+    update_cache: true
+    force: true
+  register: nginx
+
+- include: dynamic-modules.yml
+  when: nginx_dynamic_modules and (nginx_dynamic_module_sources.changed or nginx.changed)
+
+- name: Enable or disable dynamic modules
+  file:
+    path: "{{ nginx_path }}/modules-enabled/60-dynamic-modules.conf"
+    src: "{{ nginx_path }}/modules-available/60-dynamic-modules.conf"
+    state: "{{ nginx_dynamic_modules | ternary('link', 'absent') }}"
+  notify: reload nginx
+
+- name: Create SSL directory
+  file:
+    mode: 0700
+    path: "{{ nginx_path }}/ssl"
+    state: directory
+
+- name: Generate strong unique Diffie-Hellman group.
+  command: openssl dhparam -out dhparams.pem 2048
+  args:
+    chdir: "{{ nginx_path }}/ssl"
+    creates: "{{ nginx_path }}/ssl/dhparams.pem"
+  when: nginx_sites.values() | map(attribute='ssl') | selectattr('enabled') | list | count
+  notify: reload nginx
+  tags: [diffie-hellman]
+
+- name: Grab h5bp/server-configs-nginx
+  git:
+    repo: "https://github.com/h5bp/server-configs-nginx.git"
+    dest: "{{ nginx_path }}/h5bp-server-configs"
+    version: 2.0.0
+    force: true
+
+- name: Move h5bp configs
+  command: rsync -ac --delete --info=NAME /etc/nginx/h5bp-server-configs/h5bp/ /etc/nginx/h5bp
+  register: h5bp_nginx_sync
+  changed_when: false
+  notify: reload nginx
+
+- name: Create nginx.conf
+  template:
+    src: "{{ nginx_conf }}"
+    dest: "{{ nginx_path }}/nginx.conf"
+  notify: reload nginx
+  tags: nginx-includes
+
+- name: Disable default server
+  file:
+    path: "{{ nginx_path }}/sites-enabled/default"
+    state: absent
+  notify: reload nginx

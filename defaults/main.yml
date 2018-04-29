@@ -1,0 +1,49 @@
+---
+nginx_download_dir: /opt
+
+nginx_ppa: "ppa:nginx/development"
+nginx_package: nginx
+nginx_conf: nginx.conf.j2
+nginx_path: /etc/nginx
+nginx_logs_root: /var/log/nginx
+nginx_user: www-data www-data
+nginx_fastcgi_buffers: 8 8k
+nginx_fastcgi_buffer_size: 8k
+nginx_fastcgi_read_timeout: 120s
+
+# Fastcgi cache params
+nginx_cache_path: /var/cache/nginx
+nginx_cache_key_storage_size: 10m
+nginx_cache_size: 250m
+nginx_cache_inactive: 1h
+
+nginx_dynamic_modules_prerequisites:
+  - zlib1g-dev
+  - libpcre3
+  - libpcre3-dev
+  - unzip
+  - uuid-dev
+
+# Dynamic modules
+# Reserved for future Trellis. Don't change!
+nginx_dynamic_modules_default: {}
+
+nginx_dynamic_modules_custom:
+  ngx_pagespeed:
+    repo: https://github.com/apache/incubator-pagespeed-ngx/
+    version: v1.13.35.2-stable
+    objs:
+      - ngx_pagespeed.so
+  ngx_brotli:
+    repo: https://github.com/eustas/ngx_brotli
+    version: v0.1.1
+    objs:
+      - ngx_http_brotli_filter_module.so
+      - ngx_http_brotli_static_module.so
+  headers_more:
+    repo: https://github.com/openresty/headers-more-nginx-module
+    version: v0.33
+    objs:
+      - ngx_http_headers_more_filter_module.so
+
+nginx_dynamic_modules: "{{ nginx_dynamic_modules_default | combine(nginx_dynamic_modules_custom) }}"

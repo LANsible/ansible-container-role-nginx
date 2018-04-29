@@ -1,0 +1,15 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    nginx_sites:
+        no_default:
+          site_hosts:
+            - canonical: just.to.diffie.hellman
+          ssl:
+            enabled: true
+            provider: self-signed
+          multisite: {}
+
+  roles:
+    - role: ansible-role-nginx
